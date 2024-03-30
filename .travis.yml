@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t adarsh/react-test -f ./client/Dockerfile.dev
+  
+script:
+  - docker run adarsh/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t adarsh/multi-client ./client
+  - docker build -t adarsh/multinginx ./nginx
+  - docker build -t adarsh/multi-server ./server
+  - docker build -t adarsh/multi-worker ./worker
+ # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+ # Take those images and push them to docker hub
+  - docker push adarsh/multi-client
+  - docker push adarsh/multi-nginx
+  - docker push adarsh/multi-server
+  - docker push adarsh/multi-worker
+
+
